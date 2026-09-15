@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTL Lost & Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-secondary: #6b7280;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --found-bg: #d1fae5;
+            --found-text: #065f46;
+            --lost-bg: #fee2e2;
+            --lost-text: #991b1b;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --text-color: #f9fafb;
+            --text-secondary: #9ca3af;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --border-color: #374151;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --found-bg: #064e3b;
+            --found-text: #d1fae5;
+            --lost-bg: #7f1d1d;
+            --lost-text: #fee2e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Layout with Sidebar for Karma */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 30px;
+        }
+
+        @media (max-width: 850px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Controls / Filters */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-box, .filter-select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 160px;
+            background-color: var(--border-color);
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            width: fit-content;
+        }
+
+        .badge.lost {
+            background-color: var(--lost-bg);
+            color: var(--lost-text);
+        }
+
+        .badge.found {
+            background-color: var(--found-bg);
+            color: var(--found-text);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            flex: 1;
+        }
+
+        .card-footer {
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .claim-btn {
+            background: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .claim-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Sidebar Karma Widget */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .widget {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .widget h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .karma-list {
+            list-style: none;
+        }
+
+        .karma-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .karma-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: none; border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="container">
+        <!-- Шапка -->
+        <header>
+            <div class="logo">
+                <h1>KTL Lost & Found</h1>
+                <p>Потерял или нашел вещь в лицее? Мы поможем вернуть!</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">🌓 Тема</button>
+                <button class="btn" onclick="openModal()">+ Подать объявление</button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Основная лента -->
+            main-content:
+            <div>
+                <div class="controls">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Поиск по названию..." oninput="filterCards()">
+                    <select id="statusFilter" class="filter-select" onchange="filterCards()">
+                        <option value="all">Все статусы</option>
+                        <option value="lost">Потеряно</option>
+                        <option value="found">Найдено</option>
+                    </select>
+                    <select id="categoryFilter" class="filter-select" onchange="filterCards()">
+                        <option value="all">Все категории</option>
+                        <option value="Электроника">Электроника</option>
+                        <option value="Одежда">Одежда</option>
+                        <option value="Книги">Книги / Тетради</option>
+                        <option value="Разное">Разное</option>
+                    </select>
+                </div>
+
+                <!-- Сетка карточек -->
+                <div class="cards-grid" id="cardsGrid">
+                    <!-- Карточки добавляются динамически через JS -->
+                </div>
+            </div>
+
+            <!-- Сайдбар -->
+            <div class="sidebar">
+                <div class="widget">
+                    <h3>🏆 Герои недели (Карма)</h3>
+                    <ul class="karma-list">
+                        <li class="karma-item"><span>1. Алихан (10 «А»)</span> <strong>+5 вещей</strong></li>
+                        <li class="karma-item"><span>2. Диас (11 «Б»)</span> <strong>+3 вещи</strong></li>
+                        <li class="karma-item"><span>3. Санжар (9 «В»)</span> <strong>+2 вещи</strong></li>
+                    </ul>
+                </div>
+                <div class="widget">
+                    <h3>💡 Совет</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Указывайте точное место (например, «Столовая» или «Спортзал»), так вещь найдут в 3 раза быстрее!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h2>Новое объявление</h2>
+            <form id="itemForm" onsubmit="addItem(event)">
+                <div class="form-group">
+                    <label>Тип объявления</label>
+                    <select id="itemType" class="form-control">
+                        <option value="lost">Я потерял вещь</option>
+                        <option value="found">Я нашел вещь</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <select id="itemCategory" class="form-control">
+                        <option value="Электроника">Электроника</option>
+                        <option value="Одежда">Одежда</option>
+                        <option value="Книги">Книги / Тетради</option>
+                        <option value="Разное">Разное</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Название вещи</label>
+                    <input type="text" id="itemName" class="form-control" placeholder="Например: Наушники AirPods" required>
+                </div>
+                <div class="form-group">
+                    <label>Место в лицее</label>
+                    <input type="text" id="itemLocation" class="form-control" placeholder="Например: Кабинет математики №204" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание / Контрольный вопрос (для защиты от пранков)</label>
+                    <input type="text" id="itemDesc" class="form-control" placeholder="Например: Синий чехол с наклейкой" required>
+                </div>
+                <div class="form-group">
+                    <label>Ваш Telegram или имя</label>
+                    <input type="text" id="itemContact" class="form-control" placeholder="@username или Имя Класс" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Опубликовать</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Начальный массив данных (можно дополнять)
+        let items = [
+            {
+                id: 1,
+                type: 'found',
+                category: 'Электроника',
+                name: 'Черный пенал с ручками',
+                location: 'Возле столовой',
+                desc: 'Внутри гелевые ручки и стикеры',
+                contact: '@temirlan_ktl',
+                image: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=500&auto=format&fit=crop&q=60'
+            },
+            {
+                id: 2,
+                type: 'lost',
+                category: 'Электроника',
+                name: 'AirPods Pro в чехле',
+                location: 'Спортивный зал',
+                desc: 'На чехле небольшая царапина',
+                contact: 'Нуржан (10 класс)',
+                image: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500&auto=format&fit=crop&q=60'
+            }
+        ];
+
+        function renderCards(dataToRender) {
+            const grid = document.getElementById('cardsGrid');
+            grid.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1/-1; text-align: center; padding: 20px;">Ничего не найдено</p>';
+                return;
+            }
+
+            dataToRender.forEach(item => {
+                const badgeClass = item.type === 'lost' ? 'lost' : 'found';
+                const badgeText = item.type === 'lost' ? '🔴 Потеряно' : '🟢 Найдено';
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${item.image || 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60'}" class="card-img" alt="Вещь">
+                    <div class="card-content">
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                        <h3 class="card-title">${item.name}</h3>
+                        <p class="card-desc">📍 ${item.location}<br>📝 ${item.desc}</p>
+                        <div class="card-footer">
+                            <span>${item.contact}</span>
+                            <button class="claim-btn" onclick="alert('Свяжитесь с автором: ${item.contact}')">Связаться</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCards() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = items.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search);
+                const matchesStatus = status === 'all' || item.type === status;
+                const matchesCategory = category === 'all' || item.category === category;
+                return matchesSearch && matchesStatus && matchesCategory;
+            });
+
+            renderCards(filtered);
+        }
+
+        function openModal() {
+            document.getElementById('postModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('postModal').classList.remove('active');
+        }
+
+        function addItem(e) {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                type: document.getElementById('itemType').value,
+                category: document.getElementById('itemCategory').value,
+                name: document.getElementById('itemName').value,
+                location: document.getElementById('itemLocation').value,
+                desc: document.getElementById('itemDesc').value,
+                contact: document.getElementById('itemContact').value,
+                image: ''
+            };
+
+            items.unshift(newItem);
+            filterCards();
+            closeModal();
+            document.getElementById('itemForm').reset();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            body.setAttribute('data-theme', currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        // Первый рендер при загрузке
+        renderCards(items);
+    </script>
+</body>
+</html>
